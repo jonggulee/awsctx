@@ -3,23 +3,69 @@ package ui
 import (
 	"fmt"
 
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/jonggulee/awsctx/internal/aws"
 )
+
+type accountIDMsg struct {
+	index     int
+	accountID string
+}
 
 type Model struct {
 	Profiles []aws.Profile
 	Current  string
 	cursor   int
+	spinner  spinner.Model
+	loading  int
+}
+
+func NewModel(profiles []aws.Profile, current string) Model {
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+
+	return Model{
+		Profiles: profiles,
+		Current:  current,
+		spinner:  s,
+		loading:  len(profiles),
+	}
 }
 
 func (m Model) Init() tea.Cmd {
-	return nil
+	cmds := []tea.Cmd{m.spinner.Tick}
+
+	for i, p := range m.Profiles {
+		i, name := i, p.Name
+		cmds = append(cmds, func() tea.Msg {
+			accountID, err := aws.FetchAccountID(name)
+			if err != nil {
+				accountID = "unknown"
+			}
+			return accountIDMsg{index: i, accountID: accountID}
+		})
+	}
+
+	return tea.Batch(cmds...)
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case accountIDMsg:
+		m.Profiles[msg.index].AccountID = msg.accountID
+		m.loading--
+		return m, nil
+
+	case spinner.TickMsg:
+		var cmd tea.Cmd
+		m.spinner, cmd = m.spinner.Update(msg)
+		return m, cmd
+
 	case tea.KeyMsg:
+		if m.loading > 0 {
+			return m, nil
+		}
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
@@ -53,7 +99,12 @@ func (m Model) View() string {
 			active = "* "
 		}
 
-		s += fmt.Sprintf("%s%s%-30s %s\n", cursor, active, p.Name, p.AccountID)
+		accountID := p.AccountID
+		if accountID == "" {
+			accountID = m.spinner.View()
+		}
+
+		s += fmt.Sprintf("%s%s%-30s %s\n", cursor, active, p.Name, accountID)
 	}
 	s += "\n↑↓: 이동  q: 종료"
 	return s
