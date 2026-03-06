@@ -31,6 +31,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.cursor < len(m.Profiles)-1 {
 				m.cursor++
 			}
+		case "enter":
+			selected := m.Profiles[m.cursor].Name
+			aws.SaveCurrentContext(selected)
+			return m, tea.Quit
 		}
 	}
 	return m, nil

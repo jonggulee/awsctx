@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 	"sync"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -30,7 +29,7 @@ func main() {
 	}
 	wg.Wait()
 
-	m := ui.Model{Profiles: profiles, Current: os.Getenv("AWS_PROFILE")}
+	m := ui.Model{Profiles: profiles, Current: aws.LoadCurrentContext()}
 	p := tea.NewProgram(m)
 	if _, err := p.Run(); err != nil {
 		log.Fatalf("프로그램 실행 중 오류 발생: %v", err)
