@@ -106,6 +106,6 @@ func (m Model) View() string {
 
 		s += fmt.Sprintf("%s%s%-30s %s\n", cursor, active, p.Name, accountID)
 	}
-	s += "\n↑↓: 이동  q: 종료"
+	s += "\n↑↓/jk: move  enter: select  q: quit"
 	return s
 }
