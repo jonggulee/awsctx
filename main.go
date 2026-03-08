@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -15,8 +16,14 @@ func main() {
 	}
 
 	m := ui.NewModel(profiles, aws.LoadCurrentContext())
-	p := tea.NewProgram(m)
-	if _, err := p.Run(); err != nil {
+	p := tea.NewProgram(m, tea.WithAltScreen())
+	result, err := p.Run()
+	if err != nil {
 		log.Fatalf("failed to run program: %v", err)
+	}
+
+	m, ok := result.(ui.Model)
+	if ok && m.Switched != "" {
+		fmt.Print(ui.SwitchedMessage(m.Switched))
 	}
 }

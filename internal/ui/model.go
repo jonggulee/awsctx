@@ -5,6 +5,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/jonggulee/awsctx/internal/aws"
 )
 
@@ -19,6 +20,20 @@ type Model struct {
 	cursor   int
 	spinner  spinner.Model
 	loading  int
+	Switched string
+}
+
+var (
+	titleStyle    = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#25A065")).MarginBottom(1)
+	cursorStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("#E06C75")).Bold(true)
+	activeStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("#04B575")).Bold(true)
+	selectedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFDF5")).Background(lipgloss.Color("#25A065"))
+	dimStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
+	helpStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("241")).MarginTop(1)
+)
+
+func SwitchedMessage(profile string) string {
+	return fmt.Sprintf("\n Switched to profile: %s\n\n", activeStyle.Render(profile))
 }
 
 func NewModel(profiles []aws.Profile, current string) Model {
@@ -80,6 +95,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			selected := m.Profiles[m.cursor].Name
 			aws.SaveCurrentContext(selected)
+			m.Switched = selected
 			return m, tea.Quit
 		}
 	}
@@ -87,25 +103,29 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	s := "AWS Profiles:\n\n"
+	s := titleStyle.Render("AWS Profiles") + "\n\n"
 	for i, p := range m.Profiles {
 		cursor := "  "
 		if m.cursor == i {
-			cursor = "> "
+			cursor = cursorStyle.Render("> ")
 		}
 
 		active := "  "
 		if p.Name == m.Current {
-			active = "* "
+			active = activeStyle.Render("* ")
 		}
 
 		accountID := p.AccountID
 		if accountID == "" {
-			accountID = m.spinner.View()
+			accountID = dimStyle.Render(m.spinner.View())
 		}
 
-		s += fmt.Sprintf("%s%s%-30s %s\n", cursor, active, p.Name, accountID)
+		line := fmt.Sprintf("%-20s %-20s %s", p.Name, p.Region, accountID)
+		if m.cursor == i {
+			line = selectedStyle.Render(line)
+		}
+		s += fmt.Sprintf("%s%s%s\n", cursor, active, line)
 	}
-	s += "\n↑↓/jk: move  enter: select  q: quit"
+	s += helpStyle.Render("\n↑↓/jk: move  enter: select  q: quit")
 	return s
 }
