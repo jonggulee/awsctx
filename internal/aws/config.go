@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
@@ -50,6 +51,8 @@ func LoadProfiles() ([]Profile, error) {
 			if strings.HasPrefix(section, "profile ") {
 				name := strings.TrimPrefix(section, "profile ")
 				current = &Profile{Name: name}
+			} else if section == "default" {
+				current = &Profile{Name: "default"}
 			} else {
 				current = nil
 			}
@@ -75,7 +78,10 @@ func LoadProfiles() ([]Profile, error) {
 }
 
 func FetchAccountID(profileName string) (string, error) {
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithSharedConfigProfile(profileName),
 	)
 	if err != nil {
@@ -83,7 +89,7 @@ func FetchAccountID(profileName string) (string, error) {
 	}
 
 	client := sts.NewFromConfig(cfg)
-	result, err := client.GetCallerIdentity(context.TODO(), &sts.GetCallerIdentityInput{})
+	result, err := client.GetCallerIdentity(ctx, &sts.GetCallerIdentityInput{})
 	if err != nil {
 		return "", err
 	}

@@ -11,6 +11,16 @@ import (
 )
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "-c" {
+		current := aws.LoadCurrentContext()
+		if current == "" {
+			fmt.Println("No profile selected")
+		} else {
+			fmt.Printf("\n Current profile: %s\n\n", ui.RenderProfileName(current))
+		}
+		return
+	}
+
 	profiles, err := aws.LoadProfiles()
 	if err != nil {
 		log.Fatalf("failed to load profiles: %v", err)

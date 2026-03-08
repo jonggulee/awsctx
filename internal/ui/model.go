@@ -33,7 +33,11 @@ var (
 )
 
 func SwitchedMessage(profile string) string {
-	return fmt.Sprintf("\n Switched to profile: %s\n\n", activeStyle.Render(profile))
+	return fmt.Sprintf("\n Switched to profile: %s\n\n", RenderProfileName(profile))
+}
+
+func RenderProfileName(name string) string {
+	return activeStyle.Render(name)
 }
 
 func NewModel(profiles []aws.Profile, current string) Model {
