@@ -3,6 +3,7 @@ package aws
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,6 +23,9 @@ func LoadProfiles() ([]Profile, error) {
 
 	file, err := os.Open(configPath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("~/.aws/config not found. Please configure AWS CLI first")
+		}
 		return nil, err
 	}
 	defer file.Close()

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/jonggulee/awsctx/internal/aws"
@@ -13,6 +14,11 @@ func main() {
 	profiles, err := aws.LoadProfiles()
 	if err != nil {
 		log.Fatalf("failed to load profiles: %v", err)
+	}
+
+	if len(profiles) == 0 {
+		fmt.Println("No AWS profiles found in ~/.aws/config")
+		os.Exit(1)
 	}
 
 	m := ui.NewModel(profiles, aws.LoadCurrentContext())
