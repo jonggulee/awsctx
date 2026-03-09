@@ -34,10 +34,8 @@ sudo mv awsctx /usr/local/bin/awsctx
 Add to your `~/.zshrc` (or `~/.bashrc`):
 
 ```zsh
-export AWS_PROFILE=$(cat ~/.awsctx 2>/dev/null)
-
-function awsctx() {
-    /usr/local/bin/awsctx
+awsctx() {
+    /usr/local/bin/awsctx "$@"
     export AWS_PROFILE=$(cat ~/.awsctx 2>/dev/null)
 }
 ```
@@ -51,7 +49,8 @@ source ~/.zshrc
 ## Usage
 
 ```bash
-awsctx
+awsctx        # interactive profile switcher
+awsctx -c     # show current active profile
 ```
 
 | Key | Action |
