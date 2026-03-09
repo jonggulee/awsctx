@@ -44,11 +44,20 @@ func NewModel(profiles []aws.Profile, current string) Model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 
+	cursor := 0
+	for i, p := range profiles {
+		if p.Name == current {
+			cursor = i
+			break
+		}
+	}
+
 	return Model{
 		Profiles: profiles,
 		Current:  current,
 		spinner:  s,
 		loading:  len(profiles),
+		cursor:   cursor,
 	}
 }
 
