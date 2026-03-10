@@ -8,6 +8,7 @@ A lightweight CLI tool for switching between AWS profiles interactively.
 - Show current active profile (marked with `*`)
 - Async account ID loading via STS with a spinner
 - Switch profiles interactively with keyboard navigation
+- Switch directly to a profile without TUI: `awsctx <profile>`
 - Saves selected profile to `~/.awsctx` for shell integration
 
 ## Demo
@@ -49,8 +50,10 @@ source ~/.zshrc
 ## Usage
 
 ```bash
-awsctx        # interactive profile switcher
-awsctx -c     # show current active profile
+awsctx                  # interactive profile switcher
+awsctx <profile>        # switch directly to a profile
+awsctx -c               # show current active profile
+awsctx -h               # show help message
 ```
 
 | Key | Action |
@@ -62,7 +65,7 @@ awsctx -c     # show current active profile
 
 ## Requirements
 
-- Go 1.21+
+- Go 1.25+
 - AWS credentials configured in `~/.aws/config`
 - AWS credentials with `sts:GetCallerIdentity` permission (for account ID lookup)
 
